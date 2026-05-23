@@ -1,0 +1,154 @@
+Subtask 1.1: Create a Basic User Account
+Open your terminal and ensure you have administrative privileges:
+sudo -i
+Create a new user named "john":
+useradd john
+Verify the user was created by checking the /etc/passwd file:
+grep john /etc/passwd
+Expected Output:
+
+john:x:1001:1001::/home/john:/bin/bash
+Subtask 1.2: Create a User with Custom Options
+Create a user with specific options:
+useradd -c "Jane Smith, Marketing Department" -s /bin/bash -m -d /home/jsmith jsmith
+Command Breakdown: • -c: Adds a comment (full name and department) • -s: Specifies the login shell • -m: Creates the home directory • -d: Specifies the home directory path
+
+Verify the user creation:
+grep jsmith /etc/passwd
+ls -la /home/jsmith
+Subtask 1.3: Create a System User
+Create a system user for a service:
+useradd -r -s /sbin/nologin -c "Web Server User" webuser
+Command Breakdown: • -r: Creates a system user (UID below 1000) • -s /sbin/nologin: Prevents interactive login • This type of user is typically used for running services
+
+Verify the system user:
+grep webuser /etc/passwd
+id webuser
+Task 2: Modify Users with usermod
+Understanding User Modification
+The usermod command allows you to modify existing user accounts without deleting and recreating them. This is essential for maintaining user data while updating account properties.
+
+Subtask 2.1: Change User's Home Directory
+Create a new directory for john:
+mkdir /home/john_new
+Change john's home directory:
+usermod -d /home/john_new -m john
+Command Breakdown: • -d: Specifies new home directory • -m: Moves contents from old to new home directory
+
+Verify the change:
+grep john /etc/passwd
+ls -la /home/john_new
+Subtask 2.2: Change User's Login Shell
+Change jsmith's shell to zsh (if available):
+usermod -s /bin/zsh jsmith
+If zsh is not available, install it first:
+# On RHEL/CentOS
+yum install -y zsh
+# Then change the shell
+usermod -s /bin/zsh jsmith
+Verify the shell change:
+grep jsmith /etc/passwd
+Subtask 2.3: Lock and Unlock User Accounts
+Lock john's account:
+usermod -L john
+Verify the account is locked:
+grep john /etc/shadow
+Note: You'll see an exclamation mark (!) in the password field indicating the account is locked.
+
+Unlock the account:
+usermod -U john
+Task 3: Create Groups and Assign Users
+Understanding Groups
+Groups in Linux provide a way to organize users and manage permissions collectively. Every user belongs to at least one group (their primary group), and can be members of multiple secondary groups.
+
+Subtask 3.1: Create Groups with groupadd
+Create a marketing group:
+groupadd marketing
+Create a developers group with specific GID:
+groupadd -g 2000 developers
+Create a system group:
+groupadd -r services
+Verify group creation:
+grep -E "(marketing|developers|services)" /etc/group
+Subtask 3.2: Assign Users to Groups
+Add jsmith to the marketing group as primary group:
+usermod -g marketing jsmith
+Add john to multiple groups:
+usermod -G developers,marketing john
+Important: The -G option sets secondary groups. Use -a -G to append to existing groups without removing current memberships.
+
+Add john to services group without removing other memberships:
+usermod -a -G services john
+Verify group memberships:
+groups john
+groups jsmith
+id john
+id jsmith
+Subtask 3.3: Create Users and Assign to Groups During Creation
+Create a user and assign to a group simultaneously:
+useradd -g developers -G marketing -c "Bob Developer" -m bdev
+Verify the user and group assignment:
+id bdev
+groups bdev
+Task 4: Change User Passwords using passwd
+Understanding Password Management
+The passwd command is used to change user passwords. As an administrator, you can change any user's password, while regular users can only change their own passwords.
+
+Subtask 4.1: Set Passwords for New Users
+Set password for john:
+passwd john
+You will be prompted to enter and confirm the password. Choose a strong password.
+
+Set password for jsmith:
+passwd jsmith
+Set password for bdev:
+passwd bdev
+Subtask 4.2: Configure Password Policies
+Set password expiration for john (90 days):
+chage -M 90 john
+Set minimum password age (7 days before change allowed):
+chage -m 7 john
+Set warning period (7 days before expiration):
+chage -W 7 john
+View password aging information:
+chage -l john
+Subtask 4.3: Force Password Change on Next Login
+Force jsmith to change password on next login:
+chage -d 0 jsmith
+Verify the setting:
+chage -l jsmith
+Verification and Testing
+Test User Accounts and Group Memberships
+Display all created users:
+grep -E "(john|jsmith|bdev|webuser)" /etc/passwd
+Display all created groups:
+grep -E "(marketing|developers|services)" /etc/group
+Test user switching (if you have set passwords):
+su - john
+whoami
+groups
+exit
+Check user home directories:
+ls -la /home/
+Verify File Permissions and Ownership
+Create test files as different users:
+su - john -c "touch /home/john_new/john_file.txt"
+su - jsmith -c "touch /home/jsmith/jsmith_file.txt"
+Check file ownership:
+ls -la /home/john_new/john_file.txt
+ls -la /home/jsmith/jsmith_file.txt
+Advanced Configuration
+Working with Group Files and Directories
+Create a shared directory for the marketing group:
+mkdir /shared/marketing
+chgrp marketing /shared/marketing
+chmod 770 /shared/marketing
+Set the sticky bit for group collaboration:
+chmod g+s /shared/marketing
+Test group access:
+ls -la /shared/
+Managing User Defaults
+View default user creation settings:
+cat /etc/default/useradd
+View login definitions:
+cat /etc/login.defs | grep -E "(UID_MIN|GID_MIN|PASS_MAX_DAYS)"
