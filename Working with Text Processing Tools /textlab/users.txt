@@ -1,0 +1,6 @@
+john:x:1001:1001:John Smith:/home/john:/bin/bash
+mary:x:1002:1002:Mary Johnson:/home/mary:/bin/bash
+admin:x:1003:1003:System Admin:/home/admin:/bin/bash
+guest:x:1004:1004:Guest User:/home/guest:/bin/false
+root:x:0:0:Root User:/root:/bin/bash
+EOF
