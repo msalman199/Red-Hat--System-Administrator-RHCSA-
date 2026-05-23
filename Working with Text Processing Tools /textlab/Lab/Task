@@ -1,0 +1,345 @@
+Task 1: Using grep for Text Searching
+Subtask 1.1: Basic grep Operations
+First, let's create sample files to work with throughout this lab.
+
+# Create a directory for our lab work
+mkdir ~/textlab
+cd ~/textlab
+
+# Create sample log file
+cat > system.log << 'EOF'
+Jan 15 10:30:15 server1 sshd[1234]: Accepted password for admin from 192.168.1.100
+Jan 15 10:31:22 server1 httpd[5678]: GET /index.html 200 OK
+Jan 15 10:32:45 server1 sshd[1235]: Failed password for root from 192.168.1.200
+Jan 15 10:33:10 server1 httpd[5679]: POST /login.php 404 Not Found
+Jan 15 10:34:55 server1 sshd[1236]: Accepted password for user1 from 192.168.1.150
+Jan 15 10:35:20 server1 kernel: Out of memory: Kill process 9876
+Jan 15 10:36:30 server1 httpd[5680]: GET /admin.php 403 Forbidden
+Jan 15 10:37:45 server1 sshd[1237]: Failed password for admin from 192.168.1.200
+EOF
+
+# Create user data file
+cat > users.txt << 'EOF'
+john:x:1001:1001:John Smith:/home/john:/bin/bash
+mary:x:1002:1002:Mary Johnson:/home/mary:/bin/bash
+admin:x:1003:1003:System Admin:/home/admin:/bin/bash
+guest:x:1004:1004:Guest User:/home/guest:/bin/false
+root:x:0:0:Root User:/root:/bin/bash
+EOF
+
+# Create configuration file
+cat > config.conf << 'EOF'
+# Web Server Configuration
+ServerName example.com
+DocumentRoot /var/www/html
+Port 80
+Port 443
+MaxClients 150
+# Database Configuration
+DBHost localhost
+DBPort 3306
+DBUser webapp
+DBPassword secret123
+# Security Settings
+AllowOverride None
+Options Indexes
+EOF
+Subtask 1.2: Basic Pattern Searching
+Now let's practice basic grep commands:
+
+# Search for specific text in a file
+grep "sshd" system.log
+
+# Search for text ignoring case
+grep -i "failed" system.log
+
+# Count occurrences of a pattern
+grep -c "httpd" system.log
+
+# Show line numbers with matches
+grep -n "admin" system.log
+Subtask 1.3: Advanced grep Options
+Practice more advanced grep features:
+
+# Search for lines that do NOT contain a pattern
+grep -v "httpd" system.log
+
+# Search recursively in directories (create subdirectory first)
+mkdir logs
+cp system.log logs/
+grep -r "Failed" .
+
+# Search for whole words only
+grep -w "admin" users.txt
+
+# Search for multiple patterns
+grep -E "sshd|httpd" system.log
+
+# Search for patterns at the beginning of lines
+grep "^Jan 15 10:3[0-5]" system.log
+Subtask 1.4: Using Regular Expressions with grep
+Learn to use regular expressions for complex pattern matching:
+
+# Search for IP addresses
+grep -E "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" system.log
+
+# Search for lines ending with specific text
+grep "bash$" users.txt
+
+# Search for any digit
+grep "[0-9]" config.conf
+
+# Search for lines with specific character ranges
+grep "[A-Z]" config.conf
+Task 2: Using sed for Search and Replace
+Subtask 2.1: Basic sed Operations
+Learn fundamental sed commands for text manipulation:
+
+# Display specific lines
+sed -n '1,3p' users.txt
+
+# Delete specific lines (display only, doesn't modify file)
+sed '2d' users.txt
+
+# Replace first occurrence in each line
+sed 's/admin/administrator/' users.txt
+
+# Replace all occurrences in each line
+sed 's/:/|/g' users.txt
+Subtask 2.2: In-Place File Editing
+Practice modifying files directly with sed:
+
+# Create a backup copy first
+cp config.conf config.conf.backup
+
+# Replace text and save changes to file
+sed -i 's/Port 80/Port 8080/' config.conf
+
+# Verify the change
+grep "Port" config.conf
+
+# Replace multiple patterns
+sed -i -e 's/localhost/127.0.0.1/' -e 's/secret123/newpassword/' config.conf
+
+# Verify changes
+cat config.conf
+Subtask 2.3: Advanced sed Operations
+Explore more complex sed functionality:
+
+# Delete lines containing specific pattern
+sed -i '/^#/d' config.conf
+
+# Insert text after specific line
+sed -i '/ServerName/a ServerAlias www.example.com' config.conf
+
+# Insert text before specific line
+sed -i '/DocumentRoot/i # Document root configuration' config.conf
+
+# Replace text only on specific lines
+sed -i '5s/150/200/' config.conf
+
+# View the modified file
+cat config.conf
+Subtask 2.4: sed with Regular Expressions
+Combine sed with regular expressions for powerful text processing:
+
+# Create a new sample file for this exercise
+cat > addresses.txt << 'EOF'
+John Smith, 123 Main St, New York, NY 10001
+Mary Johnson, 456 Oak Ave, Los Angeles, CA 90210
+Bob Wilson, 789 Pine Rd, Chicago, IL 60601
+Alice Brown, 321 Elm St, Houston, TX 77001
+EOF
+
+# Replace state abbreviations with full names
+sed -i 's/NY/New York/g; s/CA/California/g; s/IL/Illinois/g; s/TX/Texas/g' addresses.txt
+
+# Remove all digits from addresses
+sed 's/[0-9]//g' addresses.txt
+
+# Extract only names (everything before first comma)
+sed 's/,.*$//' addresses.txt
+Task 3: Creating Basic awk Scripts
+Subtask 3.1: Basic awk Operations
+Learn fundamental awk concepts and commands:
+
+# Print specific columns
+awk -F: '{print $1, $5}' users.txt
+
+# Print with custom formatting
+awk -F: '{print "User: " $1 ", Home: " $6}' users.txt
+
+# Print lines with specific conditions
+awk -F: '$3 >= 1000 {print $1}' users.txt
+
+# Count and print number of fields
+awk -F: '{print NF, $0}' users.txt
+Subtask 3.2: awk Pattern Matching and Conditions
+Practice using patterns and conditions in awk:
+
+# Print lines matching a pattern
+awk '/bash/ {print $1}' users.txt
+
+# Print lines with field matching condition
+awk -F: '$7 == "/bin/bash" {print $1, $5}' users.txt
+
+# Use BEGIN and END blocks
+awk -F: 'BEGIN {print "=== User Report ==="} {print $1, $5} END {print "=== End Report ==="}' users.txt
+
+# Count occurrences
+awk -F: '$7 == "/bin/bash" {count++} END {print "Bash users:", count}' users.txt
+Subtask 3.3: awk Built-in Variables and Functions
+Explore awk's built-in variables and functions:
+
+# Use NR (Number of Records) and NF (Number of Fields)
+awk -F: '{print "Line " NR ": " $1 " has " NF " fields"}' users.txt
+
+# Use length function
+awk -F: '{print $1, length($1)}' users.txt
+
+# Use substr function
+awk -F: '{print substr($5, 1, 10)}' users.txt
+
+# Process log files with awk
+awk '{print $3, $4, $6}' system.log
+Subtask 3.4: Creating awk Scripts
+Create more complex awk scripts for real-world scenarios:
+
+# Create a script to analyze log files
+cat > loganalysis.awk << 'EOF'
+BEGIN {
+    print "=== Log Analysis Report ==="
+    ssh_success = 0
+    ssh_failed = 0
+    http_requests = 0
+}
+
+/sshd.*Accepted/ {
+    ssh_success++
+}
+
+/sshd.*Failed/ {
+    ssh_failed++
+}
+
+/httpd/ {
+    http_requests++
+}
+
+END {
+    print "SSH Successful logins:", ssh_success
+    print "SSH Failed logins:", ssh_failed
+    print "HTTP Requests:", http_requests
+    print "=== End Report ==="
+}
+EOF
+
+# Run the awk script
+awk -f loganalysis.awk system.log
+
+# Create a user summary script
+cat > usersummary.awk << 'EOF'
+BEGIN {
+    FS = ":"
+    print "=== User Summary ==="
+    bash_users = 0
+    system_users = 0
+}
+
+$3 < 1000 {
+    system_users++
+}
+
+$3 >= 1000 && $7 == "/bin/bash" {
+    bash_users++
+    print "Regular user:", $1, "(" $5 ")"
+}
+
+END {
+    print "System users:", system_users
+    print "Regular bash users:", bash_users
+}
+EOF
+
+# Run the user summary script
+awk -f usersummary.awk users.txt
+Task 4: Combining Text Processing Tools
+Subtask 4.1: Chaining Commands with Pipes
+Learn to combine grep, sed, and awk for powerful text processing:
+
+# Find failed SSH attempts and format output
+grep "Failed password" system.log | awk '{print $9, $11}' | sort | uniq -c
+
+# Extract user information and format it
+grep "bash" users.txt | sed 's/:/ /g' | awk '{print $1, $5, $6}'
+
+# Process configuration file
+grep -v "^#" config.conf | sed '/^$/d' | awk -F' ' '{print $1 ": " $2}'
+Subtask 4.2: Creating a Comprehensive Text Processing Script
+Create a script that combines all three tools:
+
+cat > textprocessor.sh << 'EOF'
+#!/bin/bash
+
+echo "=== System Log Analysis ==="
+echo
+
+# Analyze SSH activities
+echo "SSH Login Analysis:"
+echo "Successful logins:"
+grep "sshd.*Accepted" system.log | awk '{print $9, $11}' | sort | uniq -c | sed 's/^[ ]*/  /'
+
+echo
+echo "Failed login attempts:"
+grep "sshd.*Failed" system.log | awk '{print $9, $11}' | sort | uniq -c | sed 's/^[ ]*/  /'
+
+echo
+echo "=== HTTP Request Analysis ==="
+grep "httpd" system.log | awk '{print $7, $8}' | sort | uniq -c | sed 's/^[ ]*/  /'
+
+echo
+echo "=== User Account Summary ==="
+echo "Regular users with bash access:"
+awk -F: '$3 >= 1000 && $7 ~ /bash/ {print "  " $1 " (" $5 ")"}' users.txt
+
+echo
+echo "System accounts:"
+awk -F: '$3 < 1000 {count++} END {print "  Total system accounts: " count}' users.txt
+EOF
+
+# Make script executable and run it
+chmod +x textprocessor.sh
+./textprocessor.sh
+Subtask 4.3: Real-World System Administration Tasks
+Practice common system administration scenarios:
+
+# Create a sample access log
+cat > access.log << 'EOF'
+192.168.1.100 - - [15/Jan/2024:10:30:15 +0000] "GET /index.html HTTP/1.1" 200 1234
+192.168.1.200 - - [15/Jan/2024:10:31:22 +0000] "POST /login.php HTTP/1.1" 404 567
+192.168.1.100 - - [15/Jan/2024:10:32:45 +0000] "GET /admin.php HTTP/1.1" 403 890
+192.168.1.150 - - [15/Jan/2024:10:33:10 +0000] "GET /index.html HTTP/1.1" 200 1234
+192.168.1.200 - - [15/Jan/2024:10:34:55 +0000] "GET /login.php HTTP/1.1" 200 2345
+EOF
+
+# Analyze web server access patterns
+echo "Top IP addresses:"
+awk '{print $1}' access.log | sort | uniq -c | sort -nr
+
+echo
+echo "HTTP status codes:"
+awk '{print $9}' access.log | sort | uniq -c
+
+echo
+echo "Most requested pages:"
+awk '{print $7}' access.log | sort | uniq -c | sort -nr
+
+# Find and report security issues
+echo
+echo "Security Analysis:"
+echo "403 Forbidden attempts:"
+grep " 403 " access.log | awk '{print $1, $7}'
+
+echo
+echo "404 Not Found errors:"
+grep " 404 " access.log | awk '{print $1, $7}'
