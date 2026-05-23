@@ -1,0 +1,9 @@
+Jan 15 10:30:15 server1 sshd[1234]: Accepted password for admin from 192.168.1.100
+Jan 15 10:31:22 server1 httpd[5678]: GET /index.html 200 OK
+Jan 15 10:32:45 server1 sshd[1235]: Failed password for root from 192.168.1.200
+Jan 15 10:33:10 server1 httpd[5679]: POST /login.php 404 Not Found
+Jan 15 10:34:55 server1 sshd[1236]: Accepted password for user1 from 192.168.1.150
+Jan 15 10:35:20 server1 kernel: Out of memory: Kill process 9876
+Jan 15 10:36:30 server1 httpd[5680]: GET /admin.php 403 Forbidden
+Jan 15 10:37:45 server1 sshd[1237]: Failed password for admin from 192.168.1.200
+EOF
