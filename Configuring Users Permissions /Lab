@@ -1,0 +1,406 @@
+Task 1: Change File Ownership Using chown
+Understanding File Ownership
+In Linux, every file and directory has an owner (user) and a group. The chown command allows you to change both the user owner and group owner of files and directories.
+
+Subtask 1.1: Examine Current File Ownership
+First, let's create some test files and examine their current ownership.
+
+Create a working directory and test files:
+# Create a lab directory
+mkdir ~/permissions_lab
+cd ~/permissions_lab
+
+# Create test files
+touch file1.txt file2.txt file3.txt
+mkdir testdir
+
+# Create some content in the files
+echo "This is file 1" > file1.txt
+echo "This is file 2" > file2.txt
+echo "This is file 3" > file3.txt
+Examine current ownership:
+# View detailed file information including ownership
+ls -l
+
+# View ownership in a more readable format
+ls -l | awk '{print $3, $4, $9}' | column -t
+Expected Output:
+
+-rw-rw-r-- 1 student student 14 Nov 15 10:30 file1.txt
+-rw-rw-r-- 1 student student 14 Nov 15 10:30 file2.txt
+-rw-rw-r-- 1 student student 14 Nov 15 10:30 file3.txt
+drwxrwxr-x 2 student student 40 Nov 15 10:30 testdir
+Subtask 1.2: Change User Ownership
+Change ownership of a single file:
+# Change owner of file1.txt to root (requires sudo)
+sudo chown root file1.txt
+
+# Verify the change
+ls -l file1.txt
+Change ownership back to current user:
+# Change owner back to current user
+sudo chown $USER file1.txt
+
+# Verify the change
+ls -l file1.txt
+Subtask 1.3: Change Group Ownership
+View available groups:
+# List groups the current user belongs to
+groups
+
+# View all groups on the system
+cat /etc/group | head -10
+Change group ownership:
+# Change group ownership to 'users' group
+sudo chown :users file2.txt
+
+# Verify the change
+ls -l file2.txt
+Subtask 1.4: Change Both User and Group Ownership
+Change both user and group simultaneously:
+# Change both user and group ownership
+sudo chown root:root file3.txt
+
+# Verify the change
+ls -l file3.txt
+
+# Change back to original user and group
+sudo chown $USER:$USER file3.txt
+ls -l file3.txt
+Subtask 1.5: Recursive Ownership Changes
+Create nested directory structure:
+# Create nested directories with files
+mkdir -p testdir/subdir1/subdir2
+touch testdir/nested_file.txt
+touch testdir/subdir1/another_file.txt
+touch testdir/subdir1/subdir2/deep_file.txt
+Apply recursive ownership changes:
+# Change ownership recursively
+sudo chown -R root:root testdir/
+
+# Verify recursive changes
+ls -lR testdir/
+
+# Change back recursively
+sudo chown -R $USER:$USER testdir/
+ls -lR testdir/
+Task 2: Modify File Permissions Using chmod
+Understanding Linux Permissions
+Linux permissions are represented in three categories:
+
+User (u): The file owner
+Group (g): The group that owns the file
+Other (o): Everyone else
+Each category has three permission types:
+
+Read (r): Permission to read the file (4 in numeric)
+Write (w): Permission to modify the file (2 in numeric)
+Execute (x): Permission to execute the file (1 in numeric)
+Subtask 2.1: Understanding Current Permissions
+Examine current permissions in detail:
+# View current permissions
+ls -l
+
+# Create a script file for testing
+echo '#!/bin/bash' > test_script.sh
+echo 'echo "Hello from script!"' >> test_script.sh
+
+# Check script permissions
+ls -l test_script.sh
+Try to execute the script:
+# This should fail because execute permission is not set
+./test_script.sh
+Subtask 2.2: Using Symbolic Notation with chmod
+Add execute permission for user:
+# Add execute permission for the user (owner)
+chmod u+x test_script.sh
+
+# Verify the change
+ls -l test_script.sh
+
+# Now try to execute the script
+./test_script.sh
+Modify permissions using symbolic notation:
+# Remove write permission for group and others
+chmod go-w file1.txt
+
+# Add read permission for all
+chmod a+r file2.txt
+
+# Remove all permissions for others
+chmod o-rwx file3.txt
+
+# Verify all changes
+ls -l file*.txt
+Set specific permission combinations:
+# Set read and write for user, read for group, no permissions for others
+chmod u=rw,g=r,o= file1.txt
+
+# Set full permissions for user, read and execute for group and others
+chmod u=rwx,go=rx testdir/
+
+# Verify changes
+ls -l file1.txt
+ls -ld testdir/
+Subtask 2.3: Using Numeric Notation with chmod
+Understanding numeric permissions:
+# Create a reference file
+touch numeric_test.txt
+
+# Set permissions using numeric notation
+# 755 = rwxr-xr-x (user: rwx=7, group: r-x=5, others: r-x=5)
+chmod 755 numeric_test.txt
+
+# 644 = rw-r--r-- (user: rw-=6, group: r--=4, others: r--=4)
+chmod 644 file1.txt
+
+# 600 = rw------- (user: rw-=6, group: ---=0, others: ---=0)
+chmod 600 file2.txt
+
+# 777 = rwxrwxrwx (full permissions for all)
+chmod 777 file3.txt
+
+# Verify all changes
+ls -l *test*.txt file*.txt
+Common permission patterns:
+# Create files to demonstrate common patterns
+touch readme.txt config.conf executable.sh
+
+# Standard file permissions (644)
+chmod 644 readme.txt
+
+# Configuration file permissions (600)
+chmod 600 config.conf
+
+# Executable script permissions (755)
+chmod 755 executable.sh
+
+# Verify the patterns
+ls -l readme.txt config.conf executable.sh
+Subtask 2.4: Recursive Permission Changes
+Apply permissions recursively:
+# Set directory permissions recursively
+chmod -R 755 testdir/
+
+# Verify recursive changes
+ls -lR testdir/
+
+# Set more restrictive permissions
+chmod -R 644 testdir/
+
+# Note: This makes directories non-executable, which prevents access
+# Let's fix directory permissions while keeping file permissions
+find testdir/ -type d -exec chmod 755 {} \;
+find testdir/ -type f -exec chmod 644 {} \;
+
+# Verify the fix
+ls -lR testdir/
+Task 3: Apply Access Control Lists (ACLs) for Fine-Grained Control
+Understanding ACLs
+Access Control Lists (ACLs) provide more granular permission control than traditional Unix permissions. They allow you to set permissions for specific users and groups beyond the basic owner/group/other model.
+
+Subtask 3.1: Check ACL Support and Install Tools
+Verify ACL support:
+# Check if ACLs are supported on the current filesystem
+mount | grep acl
+
+# Check if ACL tools are installed
+which getfacl setfacl
+
+# If not installed, install ACL utilities (on RHEL/CentOS)
+sudo yum install -y acl
+Create test files for ACL demonstration:
+# Create files for ACL testing
+mkdir acl_test
+cd acl_test
+touch sensitive_file.txt shared_document.txt
+echo "Sensitive information" > sensitive_file.txt
+echo "Shared document content" > shared_document.txt
+Subtask 3.2: View Current ACLs
+Check existing ACLs:
+# View ACLs for files (initially should show standard permissions)
+getfacl sensitive_file.txt
+getfacl shared_document.txt
+
+# View ACLs in a more compact format
+getfacl --omit-header sensitive_file.txt
+Expected Output:
+
+# file: sensitive_file.txt
+# owner: student
+# group: student
+user::rw-
+group::rw-
+other::r--
+Subtask 3.3: Set User-Specific ACLs
+Grant specific user permissions:
+# Create a test user (if not exists)
+sudo useradd testuser1 2>/dev/null || echo "User testuser1 already exists"
+
+# Grant read and write access to testuser1
+setfacl -m u:testuser1:rw sensitive_file.txt
+
+# Verify the ACL
+getfacl sensitive_file.txt
+
+# Check how ls shows ACL-enabled files (notice the + sign)
+ls -l sensitive_file.txt
+Grant different permissions to another user:
+# Create another test user
+sudo useradd testuser2 2>/dev/null || echo "User testuser2 already exists"
+
+# Grant only read access to testuser2
+setfacl -m u:testuser2:r sensitive_file.txt
+
+# Verify the updated ACL
+getfacl sensitive_file.txt
+Subtask 3.4: Set Group-Specific ACLs
+Create test groups and set group ACLs:
+# Create test groups
+sudo groupadd developers 2>/dev/null || echo "Group developers already exists"
+sudo groupadd managers 2>/dev/null || echo "Group managers already exists"
+
+# Grant full access to developers group
+setfacl -m g:developers:rwx shared_document.txt
+
+# Grant read-only access to managers group
+setfacl -m g:managers:r shared_document.txt
+
+# Verify group ACLs
+getfacl shared_document.txt
+Subtask 3.5: Set Default ACLs for Directories
+Create a directory and set default ACLs:
+# Create a project directory
+mkdir project_dir
+
+# Set default ACLs for new files created in this directory
+setfacl -d -m u:testuser1:rw project_dir/
+setfacl -d -m g:developers:rwx project_dir/
+setfacl -d -m other::r project_dir/
+
+# View default ACLs
+getfacl project_dir/
+Test default ACL inheritance:
+# Create a new file in the directory
+touch project_dir/new_file.txt
+
+# Check if the new file inherited the default ACLs
+getfacl project_dir/new_file.txt
+
+# Create a subdirectory
+mkdir project_dir/subdir
+
+# Check ACL inheritance for directories
+getfacl project_dir/subdir/
+Subtask 3.6: Modify and Remove ACLs
+Modify existing ACLs:
+# Change testuser1's permissions from rw to rwx
+setfacl -m u:testuser1:rwx sensitive_file.txt
+
+# Verify the change
+getfacl sensitive_file.txt
+Remove specific ACL entries:
+# Remove testuser2's ACL entry
+setfacl -x u:testuser2 sensitive_file.txt
+
+# Remove developers group ACL
+setfacl -x g:developers shared_document.txt
+
+# Verify removals
+getfacl sensitive_file.txt
+getfacl shared_document.txt
+Remove all ACLs:
+# Remove all ACLs from a file (revert to standard permissions)
+setfacl -b sensitive_file.txt
+
+# Verify ACL removal
+getfacl sensitive_file.txt
+ls -l sensitive_file.txt
+Subtask 3.7: Advanced ACL Operations
+Copy ACLs between files:
+# Set up source file with complex ACLs
+setfacl -m u:testuser1:rwx shared_document.txt
+setfacl -m g:developers:rw shared_document.txt
+setfacl -m g:managers:r shared_document.txt
+
+# Create target file
+touch target_file.txt
+
+# Copy ACLs from source to target
+getfacl shared_document.txt | setfacl --set-file=- target_file.txt
+
+# Verify ACL copy
+getfacl target_file.txt
+Backup and restore ACLs:
+# Backup ACLs for all files in current directory
+getfacl -R . > acl_backup.txt
+
+# View the backup file
+cat acl_backup.txt
+
+# To restore ACLs (demonstration - don't run unless needed)
+# setfacl --restore=acl_backup.txt
+Practical Scenarios and Best Practices
+Scenario 1: Web Server File Permissions
+# Create a web directory structure
+mkdir -p /tmp/webserver/{html,logs,config}
+
+# Set appropriate permissions for web content
+sudo chmod 755 /tmp/webserver/html
+sudo chmod 644 /tmp/webserver/html/*
+
+# Set restrictive permissions for configuration
+sudo chmod 600 /tmp/webserver/config/*
+
+# Set log directory permissions
+sudo chmod 755 /tmp/webserver/logs
+sudo chmod 644 /tmp/webserver/logs/*
+Scenario 2: Shared Project Directory
+# Create shared project setup
+mkdir /tmp/shared_project
+sudo chown :developers /tmp/shared_project
+sudo chmod 2775 /tmp/shared_project  # Set SGID bit
+
+# Set default ACLs for collaboration
+sudo setfacl -d -m g:developers:rwx /tmp/shared_project/
+sudo setfacl -d -m other::r /tmp/shared_project/
+Troubleshooting Common Issues
+Issue 1: Permission Denied Errors
+# Check current user and groups
+whoami
+groups
+
+# Check file permissions and ownership
+ls -l filename
+getfacl filename
+
+# Check parent directory permissions
+ls -ld /path/to/parent/directory
+Issue 2: ACL Not Working
+# Verify filesystem supports ACLs
+mount | grep acl
+
+# Check if ACL packages are installed
+rpm -qa | grep acl
+
+# Remount filesystem with ACL support if needed
+sudo mount -o remount,acl /
+Issue 3: Recursive Permission Problems
+# Fix mixed file and directory permissions
+find /path -type f -exec chmod 644 {} \;
+find /path -type d -exec chmod 755 {} \;
+Lab Cleanup
+# Return to home directory
+cd ~
+
+# Clean up test files and directories
+rm -rf permissions_lab acl_test
+
+# Remove test users and groups (optional)
+sudo userdel testuser1 2>/dev/null
+sudo userdel testuser2 2>/dev/null
+sudo groupdel developers 2>/dev/null
+sudo groupdel managers 2>/dev/null
+
+# Clean up temporary directories
+sudo rm -rf /tmp/webserver /tmp/shared_project
